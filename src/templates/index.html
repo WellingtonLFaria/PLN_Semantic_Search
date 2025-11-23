@@ -19,6 +19,63 @@
         color: #333;
       }
 
+      .engine-switcher {
+        text-align: center;
+        margin-top: 20px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+      }
+
+      .engine-form {
+        display: inline-block;
+      }
+
+      .engine-btn {
+        padding: 12px 25px;
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .engine-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+      }
+
+      .engine-active {
+        background: linear-gradient(
+          135deg,
+          #28a745 0%,
+          #20c997 100%
+        ) !important;
+      }
+
+      .engine-info {
+        margin-top: 8px;
+      }
+
+      .engine-info small {
+        color: #6c757d;
+        font-style: italic;
+      }
+
+      .engine-indicator {
+        display: inline-block;
+        padding: 4px 12px;
+        background: #e9ecef;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        margin-left: 10px;
+        color: #495057;
+      }
+
       .container {
         max-width: 1200px;
         margin: 0 auto;
@@ -276,14 +333,48 @@
           />
           <button type="submit" class="search-btn">Pesquisar</button>
         </form>
+        <div class="engine-switcher">
+          <form action="/switch-engine" method="POST" class="engine-form">
+            {% if query %}
+            <input type="hidden" name="query" value="{{ query }}" />
+            {% endif %} {% if result %}
+            <input
+              type="hidden"
+              name="result_data"
+              value="{{ result | tojson | safe }}"
+            />
+            {% endif %}
+            <button
+              type="submit"
+              class="engine-btn {% if engine_type == 'transformers' %}engine-active{% endif %}"
+            >
+              {% if engine_type == 'transformers' %} 🧠 Motor: Transformers {%
+              else %} 🔤 Motor: Word2Vec {% endif %}
+            </button>
+          </form>
+          <div class="engine-info">
+            {% if engine_type == 'transformers' %}
+            <small
+              >Usando modelo transformer multilíngue para melhor precisão</small
+            >
+            {% else %}
+            <small>Usando Word2Vec otimizado para desempenho</small>
+            {% endif %}
+          </div>
+        </div>
       </div>
-
       {% if result %}
       <div class="results-section">
         {% if query %}
         <div class="query-display">
           <h2>📝 Consulta Realizada</h2>
-          <p><strong>"{{ query }}"</strong></p>
+          <p>
+            <strong>"{{ query }}"</strong>
+            <span class="engine-indicator">
+              {% if result.engine_type == 'transformers' %} 🧠 Transformer {%
+              else %} 🔤 Word2Vec {% endif %}
+            </span>
+          </p>
         </div>
         {% endif %} {% if result.categoria_mais_proxima %}
         <div class="category-result">

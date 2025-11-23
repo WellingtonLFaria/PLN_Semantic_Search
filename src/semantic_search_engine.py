@@ -18,7 +18,7 @@ from src.schemas.schemas import (
 
 
 def ensure_nltk_resources() -> None:
-    resources = ["punkt", "stopwords"]
+    resources = ["punkt", "stopwords", "punkt_tab"]
     for r in resources:
         try:
             if r == "stopwords":

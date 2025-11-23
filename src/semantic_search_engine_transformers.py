@@ -1,13 +1,14 @@
 import json
 import re
+from typing import Any
 
+import nltk  # type: ignore[import-untyped]
 import numpy as np
 import torch
-from sklearn.metrics.pairwise import cosine_similarity
-from transformers import AutoTokenizer, AutoModel
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import sent_tokenize
+from nltk.corpus import stopwords  # type: ignore[import-untyped]
+from nltk.tokenize import sent_tokenize  # type: ignore[import-untyped]
+from sklearn.metrics.pairwise import cosine_similarity  # type: ignore[import-untyped]
+from transformers import AutoModel, AutoTokenizer
 
 from src.config import settings
 from src.schemas.schemas import (
@@ -35,28 +36,25 @@ ensure_nltk_resources()
 
 class SemanticSearchEngineTransformers:
     def __init__(self, debug: bool = False) -> None:
-        self.model = None
-        self.tokenizer = None
+        self.model: Any | None = None
+        self.tokenizer: Any | None = None
         self.articles: list[Article] | None = None
         self.category_embeddings: dict[str, np.ndarray] = {}
         self.paragraphs_embeddings: list[ParagraphEmbeddings] = []
         self.debug = debug
 
-        # Stopwords em português e inglês
         self.stop_words_pt = set(stopwords.words("portuguese"))
         self.stop_words_en = set(stopwords.words("english"))
         self.stop_words = self.stop_words_pt.union(self.stop_words_en)
 
-        # Carregar modelo transformers
         self._load_model()
 
-    def _load_model(self):
-        """Carrega o modelo e tokenizer do transformers"""
+    def _load_model(self) -> None:
         model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
         if self.debug:
             print(f"🔄 Carregando modelo: {model_name}")
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)  # type: ignore[no-untyped-call]
         self.model = AutoModel.from_pretrained(model_name)
 
         self.model.eval()
@@ -70,38 +68,30 @@ class SemanticSearchEngineTransformers:
                 print("✅ Modelo carregado na CPU")
 
     def preprocess_text(self, text: str) -> str:
-        """Pré-processamento simples para limpeza do texto"""
         text = text.lower()
-        # Limpeza básica - mantém caracteres relevantes
         text = re.sub(r"[^\w\sáàâãéèêíïóôõöúçñ\-_.,!?;:]", " ", text)
         text = re.sub(r"\s+", " ", text).strip()
         return text
 
     def get_embedding(self, text: str) -> np.ndarray:
-        """Gera embedding usando modelo transformers"""
         if not text.strip():
-            return np.zeros(384)  # Dimensão do modelo MiniLM-L12
+            return np.zeros(384)
 
         text = self.preprocess_text(text)
 
-        # Tokenizar e criar tensores
-        inputs = self.tokenizer(
+        inputs = self.tokenizer(  # type: ignore[misc]
             text, padding=True, truncation=True, max_length=512, return_tensors="pt"
         )
 
-        # Mover para GPU se disponível
         if torch.cuda.is_available():
             inputs = {k: v.cuda() for k, v in inputs.items()}
 
-        # Gerar embeddings
         with torch.no_grad():
-            outputs = self.model(**inputs)
+            outputs = self.model(**inputs)  # type: ignore[misc]
 
-        # Usar mean pooling na última camada hidden states
         embeddings = outputs.last_hidden_state
         attention_mask = inputs["attention_mask"]
 
-        # Aplicar mean pooling com attention mask
         input_mask_expanded = (
             attention_mask.unsqueeze(-1).expand(embeddings.size()).float()
         )
@@ -109,33 +99,28 @@ class SemanticSearchEngineTransformers:
         sum_mask = torch.clamp(input_mask_expanded.sum(1), min=1e-9)
         embedding = sum_embeddings / sum_mask
 
-        # Converter para numpy e normalizar
-        embedding = embedding.cpu().numpy()
+        embedding = embedding.cpu().numpy()  # type: ignore[assignment]
         embedding = embedding / np.linalg.norm(embedding, axis=1, keepdims=True)
 
-        return embedding[0]
+        return embedding[0]  # type: ignore[no-any-return]
 
     def build_category_representations(self) -> None:
-        """Constrói representações para cada categoria baseado nos artigos"""
         if not self.articles:
             return
 
-        category_texts = {}
+        category_texts: dict[str, Any] = {}
 
         for article in self.articles:
             category = article.category
             if category not in category_texts:
                 category_texts[category] = []
 
-            # Usar título e primeiras sentenças do conteúdo
             title = article.title
             first_sentences = ". ".join(sent_tokenize(article.content)[:2]) + "."
 
             category_texts[category].extend([title, first_sentences])
 
-        # Gerar embedding para cada categoria
         for category, texts in category_texts.items():
-            # Combinar todos os textos da categoria
             combined_text = " ".join(texts)
             self.category_embeddings[category] = self.get_embedding(combined_text)
 
@@ -155,12 +140,10 @@ class SemanticSearchEngineTransformers:
         if self.debug:
             print(f"📚 ARTIGOS CARREGADOS: {len(articles)}")
 
-        # Constrói representações das categorias
         if self.debug:
             print("🔄 Construindo representações das categorias...")
         self.build_category_representations()
 
-        # Prepara embeddings dos parágrafos
         if self.debug:
             print("🔄 Gerando embeddings dos parágrafos...")
         self.paragraphs_embeddings = []
@@ -186,7 +169,6 @@ class SemanticSearchEngineTransformers:
             print(f"✅ {len(self.paragraphs_embeddings)} parágrafos processados")
 
     def calculate_category_similarity(self, query: str, category: str) -> float:
-        """Calcula similaridade entre consulta e categoria"""
         if category not in self.category_embeddings:
             return 0.0
 
@@ -198,17 +180,15 @@ class SemanticSearchEngineTransformers:
         if self.debug:
             print(f"   📐 {category}: {similarity:.3f}")
 
-        return similarity
+        return similarity  # type: ignore[no-any-return]
 
     def search_semantic(
         self, query: str, top_k: int = 5
     ) -> SemanticSearchEngineResponse:
-        """Busca semântica usando transformers"""
         if self.debug:
             print(f"\n🎯 INICIANDO BUSCA: '{query}'")
             print("📐 CALCULANDO SIMILARIDADES COM CATEGORIAS:")
 
-        # Calcula similaridade com categorias
         categories_similarities = {}
         for category in self.category_embeddings:
             similarity = self.calculate_category_similarity(query, category)
@@ -221,7 +201,6 @@ class SemanticSearchEngineTransformers:
             )[:10]:
                 print(f"   {category}: {similarity:.3f}")
 
-        # Calcula similaridade com parágrafos
         query_embedding = self.get_embedding(query)
         paragraphs_similarities: list[ParagraphSimilarities] = []
 
@@ -239,7 +218,6 @@ class SemanticSearchEngineTransformers:
                 )
             )
 
-        # Ordena resultados
         sorted_categories = sorted(
             categories_similarities.items(), key=lambda x: x[1], reverse=True
         )
@@ -247,7 +225,6 @@ class SemanticSearchEngineTransformers:
             paragraphs_similarities, key=lambda x: x.similarity, reverse=True
         )
 
-        # Seleciona categoria mais similar
         top_category = sorted_categories[0] if sorted_categories else None
 
         if self.debug and top_category:
@@ -265,7 +242,6 @@ class SemanticSearchEngineTransformers:
         )
 
     def _filter_articles_by_category(self, category: str | None) -> list[Article]:
-        """Filtra artigos por categoria"""
         if category and self.articles:
             return [
                 article for article in self.articles if article.category == category
@@ -274,7 +250,6 @@ class SemanticSearchEngineTransformers:
 
 
 def demonstrar_sistema_transformers() -> None:
-    """Função de demonstração do sistema com transformers"""
     sistema = SemanticSearchEngineTransformers(debug=True)
 
     if sistema.debug:
