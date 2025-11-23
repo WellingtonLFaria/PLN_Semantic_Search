@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pesquisa Semântica</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f7f7f7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        color: #333;
+      }
+
+      .container {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+      }
+
+      h1 {
+        font-size: 24px;
+        color: #4a90e2;
+        margin-bottom: 20px;
+      }
+
+      input[type="text"] {
+        width: 80%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        outline: none;
+        transition: border-color 0.3s ease;
+      }
+
+      input[type="text"]:focus {
+        border-color: #4a90e2;
+      }
+
+      button {
+        padding: 12px 24px;
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #357abd;
+      }
+
+      footer {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #888;
+      }
+
+      .result {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #e9f7fe;
+        border: 1px solid #4a90e2;
+        border-radius: 5px;
+        color: #4a90e2;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Realize uma Pesquisa Semântica</h1>
+      <form action="/search" method="POST">
+        <input
+          type="text"
+          name="user_input"
+          placeholder="Digite sua consulta..."
+          required
+        />
+        <br />
+        <button type="submit">Pesquisar</button>
+      </form>
+
+      {% if result %}
+      <div class="result">
+        <p><strong>Resultado da Pesquisa:</strong> {{ result }}</p>
+      </div>
+      {% endif %}
+
+      <footer>
+        <p>&copy; 2025 Pesquisa Semântica. Todos os direitos reservados.</p>
+      </footer>
+    </div>
+  </body>
+</html>
