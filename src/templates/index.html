@@ -5,102 +5,358 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pesquisa Semântica</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f7f7f7;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
+      * {
         margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #ddd;
+        min-height: 100vh;
+        padding: 20px;
         color: #333;
       }
 
       .container {
-        background-color: #fff;
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
         padding: 40px;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         text-align: center;
-        width: 100%;
-        max-width: 500px;
       }
 
-      h1 {
-        font-size: 24px;
-        color: #4a90e2;
-        margin-bottom: 20px;
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 300;
       }
 
-      input[type="text"] {
-        width: 80%;
-        padding: 12px;
-        margin-bottom: 20px;
-        border: 2px solid #ddd;
-        border-radius: 4px;
-        font-size: 16px;
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .search-section {
+        padding: 40px;
+        background: #f8f9fa;
+      }
+
+      .search-form {
+        display: flex;
+        gap: 15px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .search-input {
+        flex: 1;
+        padding: 15px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 50px;
+        font-size: 1rem;
         outline: none;
-        transition: border-color 0.3s ease;
+        transition: all 0.3s ease;
       }
 
-      input[type="text"]:focus {
+      .search-input:focus {
         border-color: #4a90e2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
       }
 
-      button {
-        padding: 12px 24px;
-        background-color: #4a90e2;
+      .search-btn {
+        padding: 15px 30px;
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
         cursor: pointer;
-        font-size: 16px;
-        transition: background-color 0.3s ease;
+        transition: all 0.3s ease;
       }
 
-      button:hover {
-        background-color: #357abd;
+      .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(74, 144, 226, 0.3);
+      }
+
+      .results-section {
+        padding: 0 40px 40px;
+      }
+
+      .query-display {
+        background: #e3f2fd;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        border-left: 4px solid #4a90e2;
+      }
+
+      .query-display h2 {
+        color: #1565c0;
+        margin-bottom: 10px;
+      }
+
+      .category-result {
+        background: #e8f5e8;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        border-left: 4px solid #4caf50;
+      }
+
+      .category-result h3 {
+        color: #2e7d32;
+        margin-bottom: 10px;
+      }
+
+      .paragraphs-section,
+      .articles-section {
+        margin-bottom: 30px;
+      }
+
+      .section-title {
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef;
+      }
+
+      .paragraph-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .paragraph-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .paragraph-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .similarity-badge {
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .article-info {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 10px;
+      }
+
+      .paragraph-text {
+        line-height: 1.6;
+        color: #444;
+      }
+
+      .articles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
+      .article-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        transition: all 0.3s ease;
+      }
+
+      .article-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .article-category {
+        display: inline-block;
+        background: #ffeb3b;
+        color: #333;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .article-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        line-height: 1.4;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+
+      .no-results i {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
       }
 
       footer {
-        margin-top: 20px;
-        font-size: 14px;
-        color: #888;
+        background: #f8f9fa;
+        padding: 30px;
+        text-align: center;
+        color: #666;
+        border-top: 1px solid #e9ecef;
       }
 
-      .result {
-        margin-top: 20px;
-        padding: 15px;
-        background-color: #e9f7fe;
-        border: 1px solid #4a90e2;
-        border-radius: 5px;
-        color: #4a90e2;
+      @media (max-width: 768px) {
+        .header {
+          padding: 30px 20px;
+        }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .search-section {
+          padding: 30px 20px;
+        }
+
+        .search-form {
+          flex-direction: column;
+        }
+
+        .results-section {
+          padding: 0 20px 30px;
+        }
+
+        .articles-grid {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Realize uma Pesquisa Semântica</h1>
-      <form action="/search" method="POST">
-        <input
-          type="text"
-          name="user_input"
-          placeholder="Digite sua consulta..."
-          required
-        />
-        <br />
-        <button type="submit">Pesquisar</button>
-      </form>
+      <div class="header">
+        <h1>🔍 Pesquisa Semântica</h1>
+        <p>Encontre conteúdo relacionado usando inteligência artificial</p>
+      </div>
+
+      <div class="search-section">
+        <form class="search-form" action="/search" method="POST">
+          <input
+            type="text"
+            name="user_input"
+            class="search-input"
+            placeholder="Digite sua consulta (ex: redes neurais, processamento de linguagem natural...)"
+            value="{{ query }}"
+            required
+          />
+          <button type="submit" class="search-btn">Pesquisar</button>
+        </form>
+      </div>
 
       {% if result %}
-      <div class="result">
-        <p><strong>Resultado da Pesquisa:</strong> {{ result }}</p>
+      <div class="results-section">
+        {% if query %}
+        <div class="query-display">
+          <h2>📝 Consulta Realizada</h2>
+          <p><strong>"{{ query }}"</strong></p>
+        </div>
+        {% endif %} {% if result.categoria_mais_proxima %}
+        <div class="category-result">
+          <h3>📂 Categoria Mais Próxima</h3>
+          <p>
+            <strong>{{ result.categoria_mais_proxima.nome }}</strong>
+            (Similaridade: {{ result.categoria_mais_proxima.similaridade }})
+          </p>
+        </div>
+        {% endif %} {% if result.top_paragrafos %}
+        <div class="paragraphs-section">
+          <h3 class="section-title">📝 Parágrafos Mais Relevantes</h3>
+          {% for para in result.top_paragrafos %}
+          <div class="paragraph-card">
+            <div class="paragraph-header">
+              <span class="similarity-badge"
+                >Similaridade: {{ para.similaridade }}</span
+              >
+            </div>
+            <div class="article-info">
+              📖 <strong>{{ para.titulo_artigo }}</strong> | Categoria: {{
+              para.categoria_artigo }}
+            </div>
+            <p class="paragraph-text">{{ para.texto }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %} {% if result.artigos_recomendados %}
+        <div class="articles-section">
+          <h3 class="section-title">📚 Artigos Recomendados</h3>
+          <div class="articles-grid">
+            {% for artigo in result.artigos_recomendados %}
+            <div class="article-card">
+              <div class="article-category">{{ artigo.categoria }}</div>
+              <h4 class="article-title">{{ artigo.titulo }}</h4>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
+      {% else %} {% if query %}
+      <div class="no-results">
+        <div>🔍</div>
+        <h3>Nenhum resultado encontrado</h3>
+        <p>Tente reformular sua consulta ou usar termos mais específicos.</p>
+      </div>
+      {% endif %} {% endif %}
 
       <footer>
-        <p>&copy; 2025 Pesquisa Semântica. Todos os direitos reservados.</p>
+        <p>
+          &copy; 2025 Grupo Syntax Squad. Desenvolvido com Flask e Processamento
+          de Linguagem Natural.
+        </p>
       </footer>
     </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.querySelector(".search-input")
+        if (searchInput && !searchInput.value) {
+          searchInput.focus()
+        }
+      })
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const results = document.querySelector(".results-section")
+        if (results) {
+          setTimeout(() => {
+            results.scrollIntoView({ behavior: "smooth", block: "start" })
+          }, 100)
+        }
+      })
+    </script>
   </body>
 </html>
