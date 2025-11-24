@@ -15,7 +15,7 @@ search_engine_word2vec.load_data()
 search_engine_transformers.load_data()
 
 app = Flask(__name__)
-app.secret_key = "sua_chave_secreta_aqui"
+app.secret_key = "secret-key"
 
 
 def get_current_engine() -> (
